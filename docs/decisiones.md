@@ -1,8 +1,8 @@
 # Registro de decisiones · Unidad 7
 
-1. **Cálculo en el modelo.** La tarifa diaria y el tope son invariantes de una multa; concentrarlos en `Multa.calcularMonto` reduce el riesgo de que cada controlador aplique una fórmula distinta.
-2. **Límite en SQL.** El caso consulta cinco pendientes con `countByEstudianteIdAndEstado`; cargar el historial para contarlo aumentaría memoria y latencia conforme crece.
-3. **Proveedor al iniciar.** La propiedad `biblioteca.pasarela` selecciona el adaptador. No se usa un `Map` por operación porque el proveedor no depende de cada estudiante ni de cada multa.
-4. **Contrato de salida neutral.** `ResultadoPago` mantiene aprobación, referencia y mensaje en la aplicación; ningún DTO depende de clases de PagosUDES o Wompi.
+1. **Cálculo en `Multa`.** El modelo aplica $500 COP por día y limita el total a $15.000 COP. El invariante queda junto a la entidad y evita fórmulas distintas en controladores; cambiar la tarifa implica tocar el dominio.
+2. **Límite con consulta SQL.** `countByEstudianteIdAndEstado` cuenta multas pendientes y limita a tres. Evita cargar el historial completo, a cambio de un método derivado específico en Spring Data.
+3. **Proveedor seleccionado al iniciar.** `@ConditionalOnProperty` elige `PagosUDES` o `Wompi` desde `app.pagos.proveedor`. Es sencillo cuando la selección depende del despliegue; un registro dinámico sería mejor si cada transacción eligiera su proveedor.
+4. **Resultado neutral del puerto.** `ResultadoPago` reúne proveedor, aprobación, referencia y mensaje. El servicio no depende de DTOs externos, aunque cada adaptador debe traducir el resultado de su proveedor.
 
-Las capas son suficientes para catálogo y reglas locales. El puerto/adaptadores se introduce únicamente donde hay variación externa real, aceptando unas clases adicionales para que el caso de uso y el dominio no dependan de un proveedor.
+Se conservan capas para las reglas y persistencia locales. El puerto y los adaptadores agregan clases y configuración, pero permiten reemplazar la pasarela sin acoplar `MultaService` a una marca. Ambas integraciones son simuladas y generan referencias ficticias.
